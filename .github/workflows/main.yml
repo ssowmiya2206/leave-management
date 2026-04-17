@@ -1,0 +1,33 @@
+name: Java CI/CD
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Build with Maven
+        run: mvn clean package
+      - name: Run Tests
+        run: mvn test
+
+  docker-and-k8s:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Docker Login
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Docker Image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/leave-app:latest .
+      - name: Push Docker Image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/leave-app:latest
+      # Add Kubernetes deployment steps here (e.g., kubectl apply)

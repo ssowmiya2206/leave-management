@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: leave-management-service
+  labels:
+    app: leave-management
+spec:
+  selector:
+    app: leave-management  # This MUST match the label in your deployment.yaml
+  ports:
+    - protocol: TCP
+      port: 80           # The port the service exposes
+      targetPort: 8080   # The port your Spring Boot app runs on inside the container
+  type: LoadBalancer     # Use 'NodePort' if you are testing locally on Minikube
