@@ -1,27 +1,33 @@
 package com.example.leave.service;
+
 import com.example.leave.model.LeaveRequest;
+import com.example.leave.repository.LeaveRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @Service
 public class LeaveService {
-    private Map<Long, LeaveRequest> leaveDatabase = new HashMap<>();
-    private int leaveBalance = 20; // Default balance
 
-    public LeaveRequest applyLeave(LeaveRequest request) {
+    @Autowired
+    private LeaveRepository leaveRepository;
+
+    public LeaveRequest applyForLeave(LeaveRequest request) {
         request.setStatus("PENDING");
-        leaveDatabase.put(request.getId(), request);
-        return request;
+        return leaveRepository.save(request);
     }
 
-    public LeaveRequest approveLeave(Long leaveId) {
-        LeaveRequest request = leaveDatabase.get(leaveId);
-        if (request != null && "PENDING".equals(request.getStatus())) {
-            // Simple logic: 1 day check
-            request.setStatus("APPROVED");
-            leaveBalance--;
+    public String processLeave(Long id, String status) {
+        LeaveRequest request = leaveRepository.findById(id).orElse(null);
+        if (request != null) {
+            request.setStatus(status);
+            leaveRepository.save(request);
+            return "Leave " + status;
         }
-        return request;
+        return "Request Not Found";
+    }
+
+    public List<LeaveRequest> getAllLeaves() {
+        return leaveRepository.findAll();
     }
 }
